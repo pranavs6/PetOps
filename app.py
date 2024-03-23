@@ -52,7 +52,7 @@ def get():
     if "value" in data:
         sec_req=int((data["value"]))*auger_rate
         await asyncio.create_task(push(auger_gpio,sec_req))
-        return jsonify({'message': f'Pushing {data["value"] litres in {sec_rec} seconds'})
+        return jsonify({'message': f'Pushing {data["value"]} litres in {sec_rec} seconds'})
     
     else:
          return jsonify({'error': 'Invalid input'})
