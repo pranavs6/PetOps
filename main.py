@@ -1,7 +1,7 @@
 import cv2
 from flask import Flask, Response, request, jsonify
 import RPi.GPIO as GPIO
-import asyncio
+import time
 
 GPIO.setmode(GPIO.BCM)
 
@@ -26,9 +26,9 @@ def generate_frames():
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
-async def push(gpio, sec_req):
+def push(gpio, sec_req):
     GPIO.output(gpio, GPIO.HIGH)
-    await asyncio.sleep(sec_req)
+    time.sleep(sec_req)
     GPIO.output(gpio, GPIO.LOW)
 
 @app.route('/video')
@@ -36,22 +36,23 @@ def index():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/pump', methods=['POST'])
-async def pump():
+def pump():
     data = request.get_json()
+    print(data)
     if 'value' in data:
-        sec_req = int((data["value"] * 3600) // 100)
-        await asyncio.create_task(push(pump_gpio, sec_req))
-        return jsonify({'message': f'Pumping {data["value"]} litres in {sec_req} seconds'})
+        sec_req = int((float(data["value"])* 3600) // 100)
+        push(pump_gpio, sec_req)
+        return jsonify({'message': f'Pumped {data["value"]} litres in {sec_req} seconds'})
     else:
         return jsonify({'error': 'Invalid input'})
 
 @app.route('/feed', methods=['POST'])
-async def feed():
+def feed():
     data = request.get_json()
     if "value" in data:
-        sec_req = int((data["value"])) * auger_rate
-        await asyncio.create_task(push(auger_gpio, sec_req))
-        return jsonify({'message': f'Pushing {data["value"]} litres in {sec_req} seconds'})
+        sec_req = int(float(data["value"]) * auger_rate)
+        push(auger_gpio, sec_req)
+        return jsonify({'message': f'Pushed {data["value"]} litres in {sec_req} seconds'})
     else:
         return jsonify({'error': 'Invalid input'})
 
