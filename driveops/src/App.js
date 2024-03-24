@@ -43,7 +43,7 @@ function Push() {
 
   const handlePush = async () => {
     try {
-      const response = await fetch(`http://${process.env.REACT_APP_BASE_URL}:5000/push`, {
+      const response = await fetch(`http://${process.env.REACT_APP_BASE_URL}:5000/feed`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
